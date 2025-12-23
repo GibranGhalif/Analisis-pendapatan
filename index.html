@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis PAD Sektor Pajak Daerah 2023-2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #1e40af; background: #eff6ff; }
+        .stat-card { transition: all 0.3s ease; }
+        .chart-container { position: relative; height: 300px; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold">📊 Analisis Pendapatan Asli Daerah</h1>
+                    <p class="text-blue-100 mt-1">Sektor Pajak Daerah - Laporan Realisasi Anggaran 2023-2025</p>
+                </div>
+                <div class="text-right no-print">
+                    <button onclick="window.print()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm">
+                        🖨️ Cetak Laporan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 no-print">
+        <div class="container mx-auto px-4">
+            <div class="flex overflow-x-auto">
+                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn tab-active px-6 py-4 font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+                    📈 Dashboard
+                </button>
+                <button onclick="showTab('realisasi')" id="tab-realisasi" class="tab-btn px-6 py-4 font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+                    📋 Data LRA
+                </button>
+                <button onclick="showTab('analisis')" id="tab-analisis" class="tab-btn px-6 py-4 font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+                    🔍 Analisis
+                </button>
+                <button onclick="showTab('grafik')" id="tab-grafik" class="tab-btn px-6 py-4 font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+                    📊 Grafik
+                </button>
+                <button onclick="showTab('ketentuan')" id="tab-ketentuan" class="tab-btn px-6 py-4 font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+                    📚 Dasar Hukum
+                </button>
+                <button onclick="showTab('input')" id="tab-input" class="tab-btn px-6 py-4 font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+                    ✍️ Input Data
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-6">
+        <!-- Dashboard Tab -->
+        <div id="content-dashboard" class="tab-content">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white stat-card card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-blue-100 text-sm">Total Realisasi 2025</p>
+                            <p class="text-2xl font-bold mt-1" id="total-2025">Rp 0</p>
+                        </div>
+                        <span class="text-3xl">💰</span>
+                    </div>
+                    <p class="text-blue-100 text-xs mt-2" id="growth-2025">↑ 0% dari 2024</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 text-white stat-card card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-green-100 text-sm">Rata-rata Efektivitas</p>
+                            <p class="text-2xl font-bold mt-1" id="avg-efektivitas">0%</p>
+                        </div>
+                        <span class="text-3xl">🎯</span>
+                    </div>
+                    <p class="text-green-100 text-xs mt-2" id="efektivitas-status">Sangat Efektif</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white stat-card card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-purple-100 text-sm">Pertumbuhan Rata-rata</p>
+                            <p class="text-2xl font-bold mt-1" id="avg-growth">0%</p>
+                        </div>
+                        <span class="text-3xl">📈</span>
+                    </div>
+                    <p class="text-purple-100 text-xs mt-2">Per Tahun (2023-2025)</p>
+                </div>
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white stat-card card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-orange-100 text-sm">Jumlah Jenis Pajak</p>
+                            <p class="text-2xl font-bold mt-1" id="jenis-pajak">0</p>
+                        </div>
+                        <span class="text-3xl">📝</span>
+                    </div>
+                    <p class="text-orange-100 text-xs mt-2">Sesuai UU HKPD</p>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📊 Tren Realisasi Pajak Daerah</h3>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">🥧 Kontribusi per Jenis Pajak (2025)</h3>
+                    <div class="chart-container">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <h3 class="font-semibold text-gray-800 mb-4">🏆 Top 5 Penyumbang Pajak Terbesar (2025)</h3>
+                <div id="top-performers" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- Data LRA Tab -->
+        <div id="content-realisasi" class="tab-content hidden">
+            <!-- Input Data Section - Moved to top -->
+            <div class="bg-white rounded-xl shadow-sm p-5 mb-6 no-print">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <h3 class="font-semibold text-gray-800">➕ Input Data Anggaran & Realisasi</h3>
+                    <div class="flex gap-2">
+                        <button onclick="showBulkInputModal()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">
+                            📝 Input Massal
+                        </button>
+                        <label class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm cursor-pointer">
+                            📤 Import CSV
+                            <input type="file" accept=".csv" onchange="importCSV(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Quick Add Form -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-medium text-gray-700 mb-3">🚀 Tambah Data Cepat</h4>
+                    <form id="quickAddForm" class="grid grid-cols-1 md:grid-cols-6 gap-3">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Pajak *</label>
+                            <input type="text" id="quickJenis" list="jenisPajakList" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ketik atau pilih jenis pajak" required>
+                            <datalist id="jenisPajakList">
+                                <option value="Pajak Bumi dan Bangunan (PBB-P2)">
+                                <option value="Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB)">
+                                <option value="PBJT - Makanan dan Minuman">
+                                <option value="PBJT - Tenaga Listrik">
+                                <option value="PBJT - Jasa Perhotelan">
+                                <option value="PBJT - Jasa Parkir">
+                                <option value="PBJT - Jasa Kesenian dan Hiburan">
+                                <option value="Pajak Reklame">
+                                <option value="Pajak Air Tanah">
+                                <option value="Pajak MBLB">
+                                <option value="Opsen PKB">
+                                <option value="Opsen BBNKB">
+                            </datalist>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Tahun *</label>
+                            <select id="quickTahun" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500" required>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025" selected>2025</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Anggaran (Juta Rp)</label>
+                            <input type="number" id="quickAnggaran" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Realisasi (Juta Rp)</label>
+                            <input type="number" id="quickRealisasi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" min="0" step="0.01">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                                ➕ Tambah
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Full Data Entry Form -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-700 mb-3">📊 Input Data Lengkap (Semua Tahun Sekaligus)</h4>
+                    <form id="fullDataForm">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Pajak Daerah *</label>
+                                <input type="text" id="fullJenis" list="jenisPajakList" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Nama jenis pajak daerah" required>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- 2023 -->
+                                <div class="bg-blue-50 rounded-lg p-3">
+                                    <h5 class="font-medium text-blue-800 text-sm mb-2">📅 Tahun 2023</h5>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <label class="block text-xs text-gray-600">Anggaran (Juta Rp)</label>
+                                            <input type="number" id="fullAnggaran2023" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" placeholder="0" min="0" step="0.01">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-600">Realisasi (Juta Rp)</label>
+                                            <input type="number" id="fullRealisasi2023" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" placeholder="0" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 2024 -->
+                                <div class="bg-green-50 rounded-lg p-3">
+                                    <h5 class="font-medium text-green-800 text-sm mb-2">📅 Tahun 2024</h5>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <label class="block text-xs text-gray-600">Anggaran (Juta Rp)</label>
+                                            <input type="number" id="fullAnggaran2024" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" placeholder="0" min="0" step="0.01">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-600">Realisasi (Juta Rp)</label>
+                                            <input type="number" id="fullRealisasi2024" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" placeholder="0" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 2025 -->
+                                <div class="bg-purple-50 rounded-lg p-3">
+                                    <h5 class="font-medium text-purple-800 text-sm mb-2">📅 Tahun 2025</h5>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <label class="block text-xs text-gray-600">Anggaran (Juta Rp)</label>
+                                            <input type="number" id="fullAnggaran2025" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" placeholder="0" min="0" step="0.01">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-600">Realisasi (Juta Rp)</label>
+                                            <input type="number" id="fullRealisasi2025" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" placeholder="0" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition">
+                                    💾 Simpan Data Lengkap
+                                </button>
+                                <button type="button" onclick="clearFullForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition">
+                                    🗑️ Bersihkan Form
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <h3 class="font-semibold text-gray-800">📋 Data Laporan Realisasi Anggaran (LRA) Pajak Daerah</h3>
+                    <div class="flex flex-wrap gap-2 no-print">
+                        <input type="text" id="searchData" onkeyup="filterTable()" class="border rounded-lg px-3 py-2 text-sm" placeholder="🔍 Cari jenis pajak...">
+                        <select id="filterYear" onchange="filterTable()" class="border rounded-lg px-3 py-2 text-sm">
+                            <option value="all">Semua Tahun</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                        <button onclick="exportToCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+                            📥 Export CSV
+                        </button>
+                        <button onclick="resetData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
+                            🔄 Reset Default
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="lraTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-3 text-left font-semibold text-gray-700">No</th>
+                                <th class="px-3 py-3 text-left font-semibold text-gray-700">Jenis Pajak Daerah</th>
+                                <th class="px-3 py-3 text-right font-semibold text-gray-700">Anggaran 2023</th>
+                                <th class="px-3 py-3 text-right font-semibold text-gray-700">Realisasi 2023</th>
+                                <th class="px-3 py-3 text-right font-semibold text-gray-700">Anggaran 2024</th>
+                                <th class="px-3 py-3 text-right font-semibold text-gray-700">Realisasi 2024</th>
+                                <th class="px-3 py-3 text-right font-semibold text-gray-700">Anggaran 2025</th>
+                                <th class="px-3 py-3 text-right font-semibold text-gray-700">Realisasi 2025</th>
+                                <th class="px-3 py-3 text-center font-semibold text-gray-700 no-print">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lraTableBody" class="divide-y"></tbody>
+                        <tfoot class="bg-blue-50 font-semibold">
+                            <tr id="lraTableFooter"></tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="mt-4 text-sm text-gray-500">
+                    <p>💡 <strong>Tips:</strong> Klik tombol ✏️ untuk mengedit atau 🗑️ untuk menghapus data. Data tersimpan otomatis di browser Anda.</p>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+                    <h4 class="text-blue-100 text-sm">Total Data Pajak</h4>
+                    <p class="text-2xl font-bold" id="totalDataCount">0</p>
+                    <p class="text-blue-100 text-xs mt-1">Jenis pajak tercatat</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+                    <h4 class="text-green-100 text-sm">Total Realisasi 2025</h4>
+                    <p class="text-2xl font-bold" id="totalRealisasi2025Card">Rp 0</p>
+                    <p class="text-green-100 text-xs mt-1">Dalam jutaan rupiah</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+                    <h4 class="text-purple-100 text-sm">Capaian Efektivitas</h4>
+                    <p class="text-2xl font-bold" id="avgEfektivitasCard">0%</p>
+                    <p class="text-purple-100 text-xs mt-1">Rata-rata 2025</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="p-5 border-b flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-800 text-lg">✏️ Edit Data Pajak</h3>
+                    <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+                <form id="editForm" class="p-5">
+                    <input type="hidden" id="editIndex">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pajak Daerah</label>
+                            <input type="text" id="editJenis" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 2023 -->
+                            <div class="bg-blue-50 rounded-lg p-3">
+                                <h5 class="font-medium text-blue-800 text-sm mb-2">📅 2023</h5>
+                                <div class="space-y-2">
+                                    <div>
+                                        <label class="block text-xs text-gray-600">Anggaran</label>
+                                        <input type="number" id="editAnggaran2023" class="w-full border rounded px-2 py-1.5 text-sm" min="0" step="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600">Realisasi</label>
+                                        <input type="number" id="editRealisasi2023" class="w-full border rounded px-2 py-1.5 text-sm" min="0" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 2024 -->
+                            <div class="bg-green-50 rounded-lg p-3">
+                                <h5 class="font-medium text-green-800 text-sm mb-2">📅 2024</h5>
+                                <div class="space-y-2">
+                                    <div>
+                                        <label class="block text-xs text-gray-600">Anggaran</label>
+                                        <input type="number" id="editAnggaran2024" class="w-full border rounded px-2 py-1.5 text-sm" min="0" step="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600">Realisasi</label>
+                                        <input type="number" id="editRealisasi2024" class="w-full border rounded px-2 py-1.5 text-sm" min="0" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 2025 -->
+                            <div class="bg-purple-50 rounded-lg p-3">
+                                <h5 class="font-medium text-purple-800 text-sm mb-2">📅 2025</h5>
+                                <div class="space-y-2">
+                                    <div>
+                                        <label class="block text-xs text-gray-600">Anggaran</label>
+                                        <input type="number" id="editAnggaran2025" class="w-full border rounded px-2 py-1.5 text-sm" min="0" step="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600">Realisasi</label>
+                                        <input type="number" id="editRealisasi2025" class="w-full border rounded px-2 py-1.5 text-sm" min="0" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 mt-6">
+                        <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition">
+                            💾 Simpan Perubahan
+                        </button>
+                        <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium transition">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bulk Input Modal -->
+        <div id="bulkInputModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div class="p-5 border-b flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-800 text-lg">📝 Input Data Massal</h3>
+                    <button onclick="closeBulkInputModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+                <div class="p-5">
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-2">Masukkan data dalam format: <code class="bg-gray-100 px-2 py-1 rounded">Nama Pajak; Ang2023; Real2023; Ang2024; Real2024; Ang2025; Real2025</code></p>
+                        <p class="text-xs text-gray-500">Pisahkan setiap baris untuk data pajak yang berbeda. Nilai dalam jutaan rupiah.</p>
+                    </div>
+                    <textarea id="bulkInputText" rows="10" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500" placeholder="Contoh:
+Pajak Hotel; 10000; 11000; 12000; 13000; 14000; 15000
+Pajak Restoran; 8000; 8500; 9000; 9500; 10000; 10500
+Pajak Hiburan; 5000; 4800; 6000; 6200; 7000; 7500"></textarea>
+                    
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="processBulkInput()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition">
+                            ✅ Proses & Simpan
+                        </button>
+                        <button onclick="closeBulkInputModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium transition">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analisis Tab -->
+        <div id="content-analisis" class="tab-content hidden">
+            <!-- Analisis Efektivitas -->
+            <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+                <h3 class="font-semibold text-gray-800 mb-2">🎯 Analisis Efektivitas Pajak Daerah</h3>
+                <p class="text-gray-600 text-sm mb-4">Efektivitas = (Realisasi / Anggaran) × 100% | Kriteria: >100% Sangat Efektif, 90-100% Efektif, 80-90% Cukup Efektif, 60-80% Kurang Efektif, <60% Tidak Efektif</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Jenis Pajak</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Efektivitas 2023</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Efektivitas 2024</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Efektivitas 2025</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Rata-rata</th>
+                            </tr>
+                        </thead>
+                        <tbody id="efektivitasBody" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analisis Pertumbuhan -->
+            <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+                <h3 class="font-semibold text-gray-800 mb-2">📈 Analisis Pertumbuhan Pajak Daerah</h3>
+                <p class="text-gray-600 text-sm mb-4">Pertumbuhan = ((Realisasi Tahun Ini - Realisasi Tahun Lalu) / Realisasi Tahun Lalu) × 100%</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Jenis Pajak</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Realisasi 2023</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Realisasi 2024</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Growth 23-24</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Realisasi 2025</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Growth 24-25</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pertumbuhanBody" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analisis Kontribusi -->
+            <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+                <h3 class="font-semibold text-gray-800 mb-2">🥧 Analisis Kontribusi Pajak Daerah terhadap Total</h3>
+                <p class="text-gray-600 text-sm mb-4">Kontribusi = (Realisasi Jenis Pajak / Total Realisasi Pajak) × 100%</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Jenis Pajak</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Kontribusi 2023</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Kontribusi 2024</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Kontribusi 2025</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Tren</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kontribusiBody" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analisis Elastisitas -->
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <h3 class="font-semibold text-gray-800 mb-2">📐 Ringkasan Analisis & Rekomendasi</h3>
+                <div id="rekomendasi" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- Grafik Tab -->
+        <div id="content-grafik" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📊 Perbandingan Anggaran vs Realisasi</h3>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="compareChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📈 Pertumbuhan per Jenis Pajak</h3>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">🎯 Tingkat Efektivitas per Tahun</h3>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="efektivitasChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📉 Realisasi per Jenis Pajak (Horizontal Bar)</h3>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="horizontalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ketentuan Tab -->
+        <div id="content-ketentuan" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📚 Dasar Hukum Pajak Daerah</h3>
+                    <div class="space-y-4 text-sm text-gray-700">
+                        <div class="border-l-4 border-blue-500 pl-4">
+                            <h4 class="font-semibold">UU No. 1 Tahun 2022</h4>
+                            <p class="text-gray-600">Hubungan Keuangan antara Pemerintah Pusat dan Pemerintahan Daerah (HKPD)</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4">
+                            <h4 class="font-semibold">PP No. 35 Tahun 2023</h4>
+                            <p class="text-gray-600">Ketentuan Umum Pajak Daerah dan Retribusi Daerah</p>
+                        </div>
+                        <div class="border-l-4 border-purple-500 pl-4">
+                            <h4 class="font-semibold">Permendagri No. 77 Tahun 2020</h4>
+                            <p class="text-gray-600">Pedoman Teknis Pengelolaan Keuangan Daerah</p>
+                        </div>
+                        <div class="border-l-4 border-orange-500 pl-4">
+                            <h4 class="font-semibold">PP No. 12 Tahun 2019</h4>
+                            <p class="text-gray-600">Pengelolaan Keuangan Daerah</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">💰 Jenis Pajak Daerah (UU HKPD)</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-blue-800">Pajak Kabupaten/Kota:</h4>
+                            <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+                                <li>Pajak Bumi dan Bangunan Perdesaan dan Perkotaan (PBB-P2)</li>
+                                <li>Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB)</li>
+                                <li>Pajak Barang dan Jasa Tertentu (PBJT)</li>
+                                <li>Pajak Reklame</li>
+                                <li>Pajak Air Tanah</li>
+                                <li>Pajak Mineral Bukan Logam dan Batuan (MBLB)</li>
+                                <li>Pajak Sarang Burung Walet</li>
+                                <li>Opsen Pajak Kendaraan Bermotor (PKB)</li>
+                                <li>Opsen Bea Balik Nama Kendaraan Bermotor (BBNKB)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-green-800">Pajak Provinsi:</h4>
+                            <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+                                <li>Pajak Kendaraan Bermotor (PKB)</li>
+                                <li>Bea Balik Nama Kendaraan Bermotor (BBNKB)</li>
+                                <li>Pajak Alat Berat (PAB)</li>
+                                <li>Pajak Bahan Bakar Kendaraan Bermotor (PBBKB)</li>
+                                <li>Pajak Air Permukaan (PAP)</li>
+                                <li>Pajak Rokok</li>
+                                <li>Opsen Pajak MBLB</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📐 Kriteria Efektivitas</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 p-3 bg-green-100 rounded-lg">
+                            <span class="text-2xl">🌟</span>
+                            <div>
+                                <span class="font-semibold text-green-800">> 100%</span>
+                                <span class="text-green-700 ml-2">Sangat Efektif</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-blue-100 rounded-lg">
+                            <span class="text-2xl">✅</span>
+                            <div>
+                                <span class="font-semibold text-blue-800">90% - 100%</span>
+                                <span class="text-blue-700 ml-2">Efektif</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-yellow-100 rounded-lg">
+                            <span class="text-2xl">⚠️</span>
+                            <div>
+                                <span class="font-semibold text-yellow-800">80% - 90%</span>
+                                <span class="text-yellow-700 ml-2">Cukup Efektif</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-orange-100 rounded-lg">
+                            <span class="text-2xl">📉</span>
+                            <div>
+                                <span class="font-semibold text-orange-800">60% - 80%</span>
+                                <span class="text-orange-700 ml-2">Kurang Efektif</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-red-100 rounded-lg">
+                            <span class="text-2xl">❌</span>
+                            <div>
+                                <span class="font-semibold text-red-800">< 60%</span>
+                                <span class="text-red-700 ml-2">Tidak Efektif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📊 Kriteria Kontribusi</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 p-3 bg-green-100 rounded-lg">
+                            <span class="text-2xl">🥇</span>
+                            <div>
+                                <span class="font-semibold text-green-800">> 50%</span>
+                                <span class="text-green-700 ml-2">Sangat Baik</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-blue-100 rounded-lg">
+                            <span class="text-2xl">🥈</span>
+                            <div>
+                                <span class="font-semibold text-blue-800">40% - 50%</span>
+                                <span class="text-blue-700 ml-2">Baik</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-yellow-100 rounded-lg">
+                            <span class="text-2xl">🥉</span>
+                            <div>
+                                <span class="font-semibold text-yellow-800">30% - 40%</span>
+                                <span class="text-yellow-700 ml-2">Cukup Baik</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-orange-100 rounded-lg">
+                            <span class="text-2xl">📊</span>
+                            <div>
+                                <span class="font-semibold text-orange-800">20% - 30%</span>
+                                <span class="text-orange-700 ml-2">Sedang</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-gray-100 rounded-lg">
+                            <span class="text-2xl">📉</span>
+                            <div>
+                                <span class="font-semibold text-gray-800">< 20%</span>
+                                <span class="text-gray-700 ml-2">Kurang</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Data Tab -->
+        <div id="content-input" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Quick Entry Panel -->
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">🚀 Input Data Cepat</h3>
+                    <p class="text-sm text-gray-600 mb-4">Tambahkan data anggaran dan realisasi untuk satu tahun tertentu.</p>
+                    
+                    <form id="inputQuickForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pajak Daerah *</label>
+                            <input type="text" id="inputQuickJenis" list="jenisPajakList2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Pilih atau ketik nama pajak" required>
+                            <datalist id="jenisPajakList2">
+                                <option value="Pajak Bumi dan Bangunan (PBB-P2)">
+                                <option value="Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB)">
+                                <option value="PBJT - Makanan dan Minuman">
+                                <option value="PBJT - Tenaga Listrik">
+                                <option value="PBJT - Jasa Perhotelan">
+                                <option value="PBJT - Jasa Parkir">
+                                <option value="PBJT - Jasa Kesenian dan Hiburan">
+                                <option value="Pajak Reklame">
+                                <option value="Pajak Air Tanah">
+                                <option value="Pajak MBLB">
+                                <option value="Opsen PKB">
+                                <option value="Opsen BBNKB">
+                            </datalist>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tahun *</label>
+                                <select id="inputQuickTahun" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025" selected>2025</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Anggaran</label>
+                                <input type="number" id="inputQuickAnggaran" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Juta Rp" min="0" step="0.01">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Realisasi</label>
+                                <input type="number" id="inputQuickRealisasi" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Juta Rp" min="0" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2.5 rounded-lg font-medium transition">
+                            ➕ Tambah Data
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Complete Entry Panel -->
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📊 Input Data Lengkap</h3>
+                    <p class="text-sm text-gray-600 mb-4">Tambahkan data untuk semua tahun sekaligus (2023-2025).</p>
+                    
+                    <form id="inputCompleteForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pajak Daerah *</label>
+                            <input type="text" id="inputCompleteJenis" list="jenisPajakList2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500" placeholder="Nama jenis pajak" required>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            <div class="bg-blue-50 p-2 rounded">
+                                <label class="block text-xs font-medium text-blue-700">Ang. 2023</label>
+                                <input type="number" id="inputCompleteAng2023" class="w-full border rounded px-2 py-1 text-sm mt-1" placeholder="0" min="0">
+                            </div>
+                            <div class="bg-blue-50 p-2 rounded">
+                                <label class="block text-xs font-medium text-blue-700">Real. 2023</label>
+                                <input type="number" id="inputCompleteReal2023" class="w-full border rounded px-2 py-1 text-sm mt-1" placeholder="0" min="0">
+                            </div>
+                            <div class="bg-green-50 p-2 rounded">
+                                <label class="block text-xs font-medium text-green-700">Ang. 2024</label>
+                                <input type="number" id="inputCompleteAng2024" class="w-full border rounded px-2 py-1 text-sm mt-1" placeholder="0" min="0">
+                            </div>
+                            <div class="bg-green-50 p-2 rounded">
+                                <label class="block text-xs font-medium text-green-700">Real. 2024</label>
+                                <input type="number" id="inputCompleteReal2024" class="w-full border rounded px-2 py-1 text-sm mt-1" placeholder="0" min="0">
+                            </div>
+                            <div class="bg-purple-50 p-2 rounded">
+                                <label class="block text-xs font-medium text-purple-700">Ang. 2025</label>
+                                <input type="number" id="inputCompleteAng2025" class="w-full border rounded px-2 py-1 text-sm mt-1" placeholder="0" min="0">
+                            </div>
+                            <div class="bg-purple-50 p-2 rounded">
+                                <label class="block text-xs font-medium text-purple-700">Real. 2025</label>
+                                <input type="number" id="inputCompleteReal2025" class="w-full border rounded px-2 py-1 text-sm mt-1" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-lg font-medium transition">
+                            💾 Simpan Data Lengkap
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Import/Export Panel -->
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">📤 Import & Export Data</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                            <h4 class="font-medium text-teal-800 mb-2">📥 Import dari CSV</h4>
+                            <p class="text-sm text-teal-700 mb-3">Upload file CSV dengan format: Jenis Pajak, Ang2023, Real2023, Ang2024, Real2024, Ang2025, Real2025</p>
+                            <label class="inline-block bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg cursor-pointer transition">
+                                📂 Pilih File CSV
+                                <input type="file" accept=".csv" onchange="importCSV(event)" class="hidden">
+                            </label>
+                        </div>
+                        
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h4 class="font-medium text-green-800 mb-2">📤 Export ke CSV</h4>
+                            <p class="text-sm text-green-700 mb-3">Download semua data pajak dalam format CSV yang dapat dibuka di Excel.</p>
+                            <button onclick="exportToCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                                📥 Download CSV
+                            </button>
+                        </div>
+                        
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <h4 class="font-medium text-purple-800 mb-2">📝 Input Massal</h4>
+                            <p class="text-sm text-purple-700 mb-3">Input banyak data sekaligus dengan format teks.</p>
+                            <button onclick="showBulkInputModal()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition">
+                                ✏️ Buka Form Massal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management Panel -->
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <h3 class="font-semibold text-gray-800 mb-4">⚙️ Manajemen Data</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h4 class="font-medium text-yellow-800 mb-2">🔄 Reset Data</h4>
+                            <p class="text-sm text-yellow-700 mb-3">Kembalikan semua data ke pengaturan default. Perubahan yang sudah dilakukan akan hilang.</p>
+                            <button onclick="resetData()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition">
+                                🔄 Reset ke Default
+                            </button>
+                        </div>
+                        
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-medium text-red-800 mb-2">🗑️ Hapus Semua Data</h4>
+                            <p class="text-sm text-red-700 mb-3">Hapus semua data pajak. Gunakan dengan hati-hati!</p>
+                            <button onclick="clearAllData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                                🗑️ Hapus Semua
+                            </button>
+                        </div>
+                        
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-2">📊 Statistik Data</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="bg-white p-2 rounded border">
+                                    <span class="text-gray-500">Total Jenis Pajak:</span>
+                                    <span class="font-bold text-gray-800" id="statTotalJenis">0</span>
+                                </div>
+                                <div class="bg-white p-2 rounded border">
+                                    <span class="text-gray-500">Data Tersimpan:</span>
+                                    <span class="font-bold text-gray-800" id="statDataSize">0 KB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Entries -->
+            <div class="bg-white rounded-xl shadow-sm p-5 mt-6">
+                <h3 class="font-semibold text-gray-800 mb-4">📋 Data Terbaru</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-gray-700">Jenis Pajak</th>
+                                <th class="px-3 py-2 text-right text-gray-700">Ang. 2025</th>
+                                <th class="px-3 py-2 text-right text-gray-700">Real. 2025</th>
+                                <th class="px-3 py-2 text-center text-gray-700">Efektivitas</th>
+                                <th class="px-3 py-2 text-center text-gray-700">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentEntriesBody" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400 text-sm">Aplikasi Analisis PAD Sektor Pajak Daerah</p>
+            <p class="text-gray-500 text-xs mt-1">Berdasarkan UU No. 1 Tahun 2022 tentang HKPD dan PP No. 35 Tahun 2023</p>
+        </div>
+    </footer>
+
+    <script>
+        // Default Data Pajak Daerah (dalam jutaan rupiah)
+        const defaultPajakData = [
+            {
+                nama: "Pajak Bumi dan Bangunan (PBB-P2)",
+                anggaran2023: 45000, realisasi2023: 48500,
+                anggaran2024: 50000, realisasi2024: 52300,
+                anggaran2025: 55000, realisasi2025: 58200
+            },
+            {
+                nama: "Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB)",
+                anggaran2023: 35000, realisasi2023: 38200,
+                anggaran2024: 40000, realisasi2024: 42500,
+                anggaran2025: 45000, realisasi2025: 47800
+            },
+            {
+                nama: "Pajak Barang dan Jasa Tertentu (PBJT) - Makanan/Minuman",
+                anggaran2023: 28000, realisasi2023: 30500,
+                anggaran2024: 32000, realisasi2024: 35200,
+                anggaran2025: 38000, realisasi2025: 41500
+            },
+            {
+                nama: "PBJT - Tenaga Listrik",
+                anggaran2023: 22000, realisasi2023: 23800,
+                anggaran2024: 25000, realisasi2024: 26500,
+                anggaran2025: 28000, realisasi2025: 29800
+            },
+            {
+                nama: "PBJT - Jasa Perhotelan",
+                anggaran2023: 18000, realisasi2023: 16500,
+                anggaran2024: 20000, realisasi2024: 22800,
+                anggaran2025: 25000, realisasi2025: 27500
+            },
+            {
+                nama: "PBJT - Jasa Parkir",
+                anggaran2023: 8000, realisasi2023: 7200,
+                anggaran2024: 9000, realisasi2024: 9800,
+                anggaran2025: 10500, realisasi2025: 11200
+            },
+            {
+                nama: "PBJT - Jasa Kesenian dan Hiburan",
+                anggaran2023: 12000, realisasi2023: 10800,
+                anggaran2024: 14000, realisasi2024: 15500,
+                anggaran2025: 17000, realisasi2025: 18500
+            },
+            {
+                nama: "Pajak Reklame",
+                anggaran2023: 6500, realisasi2023: 6800,
+                anggaran2024: 7000, realisasi2024: 7500,
+                anggaran2025: 8000, realisasi2025: 8300
+            },
+            {
+                nama: "Pajak Air Tanah",
+                anggaran2023: 3500, realisasi2023: 3200,
+                anggaran2024: 4000, realisasi2024: 4300,
+                anggaran2025: 4500, realisasi2025: 4800
+            },
+            {
+                nama: "Opsen PKB",
+                anggaran2023: 0, realisasi2023: 0,
+                anggaran2024: 0, realisasi2024: 0,
+                anggaran2025: 42000, realisasi2025: 45500
+            },
+            {
+                nama: "Opsen BBNKB",
+                anggaran2023: 0, realisasi2023: 0,
+                anggaran2024: 0, realisasi2024: 0,
+                anggaran2025: 28000, realisasi2025: 30200
+            }
+        ];
+
+        // Load data from localStorage or use default
+        let pajakData = JSON.parse(localStorage.getItem('pajakData')) || [...defaultPajakData];
+
+        // Chart instances
+        let charts = {};
+
+        // Format currency — input values are in jutaan (juta), convert to full rupiah for display
+        function formatRupiah(numInJuta) {
+            const rupiah = Number(numInJuta) * 1000000;
+            if (!isFinite(rupiah)) return '-';
+            if (rupiah >= 1e12) return 'Rp ' + (rupiah / 1e12).toFixed(2) + ' T';
+            if (rupiah >= 1e9) return 'Rp ' + (rupiah / 1e9).toFixed(2) + ' M';
+            if (rupiah >= 1e6) return 'Rp ' + (rupiah / 1e6).toFixed(2) + ' Jt';
+            return 'Rp ' + rupiah.toLocaleString('id-ID');
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('id-ID');
+        }
+
+        // Calculate totals
+        function getTotals() {
+            return pajakData.reduce((acc, item) => {
+                acc.anggaran2023 += item.anggaran2023;
+                acc.realisasi2023 += item.realisasi2023;
+                acc.anggaran2024 += item.anggaran2024;
+                acc.realisasi2024 += item.realisasi2024;
+                acc.anggaran2025 += item.anggaran2025;
+                acc.realisasi2025 += item.realisasi2025;
+                return acc;
+            }, { anggaran2023: 0, realisasi2023: 0, anggaran2024: 0, realisasi2024: 0, anggaran2025: 0, realisasi2025: 0 });
+        }
+
+        // Calculate effectiveness
+        function getEfektivitas(realisasi, anggaran) {
+            if (anggaran === 0) return 0;
+            return (realisasi / anggaran) * 100;
+        }
+
+        function getEfektivitasLabel(persen) {
+            if (persen > 100) return { text: 'Sangat Efektif', class: 'bg-green-100 text-green-800' };
+            if (persen >= 90) return { text: 'Efektif', class: 'bg-blue-100 text-blue-800' };
+            if (persen >= 80) return { text: 'Cukup Efektif', class: 'bg-yellow-100 text-yellow-800' };
+            if (persen >= 60) return { text: 'Kurang Efektif', class: 'bg-orange-100 text-orange-800' };
+            return { text: 'Tidak Efektif', class: 'bg-red-100 text-red-800' };
+        }
+
+        // Calculate growth
+        function getGrowth(current, previous) {
+            if (previous === 0) return current > 0 ? 100 : 0;
+            return ((current - previous) / previous) * 100;
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-active'));
+
+            const contentEl = document.getElementById('content-' + tabName);
+            const tabBtn = document.getElementById('tab-' + tabName);
+            if (contentEl) contentEl.classList.remove('hidden');
+            if (tabBtn) tabBtn.classList.add('tab-active');
+
+            if (tabName === 'grafik') {
+                setTimeout(() => {
+                    renderCompareChart();
+                    renderGrowthChart();
+                    renderEfektivitasChart();
+                    renderHorizontalChart();
+                }, 100);
+            }
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            const totals = getTotals();
+            
+            document.getElementById('total-2025').textContent = formatRupiah(totals.realisasi2025);
+            const growth2425 = getGrowth(totals.realisasi2025, totals.realisasi2024);
+            document.getElementById('growth-2025').textContent = (growth2425 >= 0 ? '↑ ' : '↓ ') + Math.abs(growth2425).toFixed(1) + '% dari 2024';
+            
+            const avgEfektivitas = getEfektivitas(totals.realisasi2025, totals.anggaran2025);
+            document.getElementById('avg-efektivitas').textContent = avgEfektivitas.toFixed(1) + '%';
+            document.getElementById('efektivitas-status').textContent = getEfektivitasLabel(avgEfektivitas).text;
+            
+            const growth2324 = getGrowth(totals.realisasi2024, totals.realisasi2023);
+            const avgGrowth = (growth2324 + growth2425) / 2;
+            document.getElementById('avg-growth').textContent = avgGrowth.toFixed(1) + '%';
+            
+            document.getElementById('jenis-pajak').textContent = pajakData.length;
+            
+            // Top performers
+            const sorted2025 = [...pajakData].sort((a, b) => b.realisasi2025 - a.realisasi2025).slice(0, 5);
+            const topContainer = document.getElementById('top-performers');
+            topContainer.innerHTML = sorted2025.map((item, idx) => {
+                const kontribusi = (item.realisasi2025 / totals.realisasi2025) * 100;
+                return `
+                    <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <span class="text-2xl">${['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][idx]}</span>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">${item.nama}</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: ${kontribusi}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-gray-800">${formatRupiah(item.realisasi2025)}</p>
+                            <p class="text-xs text-gray-500">${kontribusi.toFixed(1)}%</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            renderTrendChart();
+            renderPieChart();
+        }
+
+        // Render LRA Table
+        function renderLRATable() {
+            const tbody = document.getElementById('lraTableBody');
+            const tfoot = document.getElementById('lraTableFooter');
+            const totals = getTotals();
+            const searchTerm = document.getElementById('searchData')?.value?.toLowerCase() || '';
+            const filterYear = document.getElementById('filterYear')?.value || 'all';
+            
+            // Filter data based on search
+            const filteredData = pajakData.filter(item => 
+                item.nama.toLowerCase().includes(searchTerm)
+            );
+            
+            tbody.innerHTML = filteredData.map((item, idx) => {
+                const originalIndex = pajakData.findIndex(p => p.nama === item.nama);
+                const ef2025 = getEfektivitas(item.realisasi2025, item.anggaran2025);
+                const efLabel = getEfektivitasLabel(ef2025);
+                
+                return `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-3 py-3 text-gray-500 text-center">${idx + 1}</td>
+                    <td class="px-3 py-3">
+                        <div class="font-medium text-gray-800">${item.nama}</div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            Efektivitas 2025: <span class="px-1.5 py-0.5 rounded text-xs ${efLabel.class}">${ef2025.toFixed(1)}%</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-3 text-right text-gray-600 ${filterYear !== 'all' && filterYear !== '2023' ? 'opacity-40' : ''}">${formatNumber(item.anggaran2023)}</td>
+                    <td class="px-3 py-3 text-right text-gray-800 font-medium ${filterYear !== 'all' && filterYear !== '2023' ? 'opacity-40' : ''}">${formatNumber(item.realisasi2023)}</td>
+                    <td class="px-3 py-3 text-right text-gray-600 ${filterYear !== 'all' && filterYear !== '2024' ? 'opacity-40' : ''}">${formatNumber(item.anggaran2024)}</td>
+                    <td class="px-3 py-3 text-right text-gray-800 font-medium ${filterYear !== 'all' && filterYear !== '2024' ? 'opacity-40' : ''}">${formatNumber(item.realisasi2024)}</td>
+                    <td class="px-3 py-3 text-right text-gray-600 ${filterYear !== 'all' && filterYear !== '2025' ? 'opacity-40' : ''}">${formatNumber(item.anggaran2025)}</td>
+                    <td class="px-3 py-3 text-right text-gray-800 font-medium ${filterYear !== 'all' && filterYear !== '2025' ? 'opacity-40' : ''}">${formatNumber(item.realisasi2025)}</td>
+                    <td class="px-3 py-3 text-center no-print">
+                        <div class="flex justify-center gap-1">
+                            <button onclick="openEditModal(${originalIndex})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs transition" title="Edit">
+                                ✏️
+                            </button>
+                            <button onclick="deleteData(${originalIndex})" class="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded text-xs transition" title="Hapus">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+            
+            // Show empty state if no data
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <span class="text-4xl mb-2">📭</span>
+                                <p class="font-medium">Tidak ada data ditemukan</p>
+                                <p class="text-sm">Coba ubah filter pencarian atau tambah data baru</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            tfoot.innerHTML = `
+                <td class="px-3 py-3 text-gray-800" colspan="2">TOTAL PAJAK DAERAH</td>
+                <td class="px-3 py-3 text-right text-gray-800">${formatNumber(totals.anggaran2023)}</td>
+                <td class="px-3 py-3 text-right text-gray-800">${formatNumber(totals.realisasi2023)}</td>
+                <td class="px-3 py-3 text-right text-gray-800">${formatNumber(totals.anggaran2024)}</td>
+                <td class="px-3 py-3 text-right text-gray-800">${formatNumber(totals.realisasi2024)}</td>
+                <td class="px-3 py-3 text-right text-gray-800">${formatNumber(totals.anggaran2025)}</td>
+                <td class="px-3 py-3 text-right text-gray-800">${formatNumber(totals.realisasi2025)}</td>
+                <td class="px-3 py-3 no-print"></td>
+            `;
+        }
+
+        // Render Efektivitas Analysis
+        function renderEfektivitasAnalysis() {
+            const tbody = document.getElementById('efektivitasBody');
+            
+            tbody.innerHTML = pajakData.map(item => {
+                const ef2023 = getEfektivitas(item.realisasi2023, item.anggaran2023);
+                const ef2024 = getEfektivitas(item.realisasi2024, item.anggaran2024);
+                const ef2025 = getEfektivitas(item.realisasi2025, item.anggaran2025);
+                const avgEf = (ef2023 + ef2024 + ef2025) / 3;
+                
+                const label2023 = getEfektivitasLabel(ef2023);
+                const label2024 = getEfektivitasLabel(ef2024);
+                const label2025 = getEfektivitasLabel(ef2025);
+                const labelAvg = getEfektivitasLabel(avgEf);
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-medium text-gray-800">${item.nama}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs ${label2023.class}">${ef2023.toFixed(1)}%</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs ${label2024.class}">${ef2024.toFixed(1)}%</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs ${label2025.class}">${ef2025.toFixed(1)}%</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${labelAvg.class}">${avgEf.toFixed(1)}%</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Pertumbuhan Analysis
+        function renderPertumbuhanAnalysis() {
+            const tbody = document.getElementById('pertumbuhanBody');
+            
+            tbody.innerHTML = pajakData.map(item => {
+                const growth2324 = getGrowth(item.realisasi2024, item.realisasi2023);
+                const growth2425 = getGrowth(item.realisasi2025, item.realisasi2024);
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-medium text-gray-800">${item.nama}</td>
+                        <td class="px-4 py-3 text-right text-gray-600">${formatNumber(item.realisasi2023)}</td>
+                        <td class="px-4 py-3 text-right text-gray-600">${formatNumber(item.realisasi2024)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs ${growth2324 >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${growth2324 >= 0 ? '↑' : '↓'} ${Math.abs(growth2324).toFixed(1)}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right text-gray-600">${formatNumber(item.realisasi2025)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs ${growth2425 >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${growth2425 >= 0 ? '↑' : '↓'} ${Math.abs(growth2425).toFixed(1)}%
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Kontribusi Analysis
+        function renderKontribusiAnalysis() {
+            const tbody = document.getElementById('kontribusiBody');
+            const totals = getTotals();
+            
+            tbody.innerHTML = pajakData.map(item => {
+                const kontrib2023 = (item.realisasi2023 / totals.realisasi2023) * 100;
+                const kontrib2024 = (item.realisasi2024 / totals.realisasi2024) * 100;
+                const kontrib2025 = (item.realisasi2025 / totals.realisasi2025) * 100;
+                
+                const trend = kontrib2025 - kontrib2023;
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-medium text-gray-800">${item.nama}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${Math.min(kontrib2023 * 2, 100)}%"></div>
+                                </div>
+                                <span class="text-sm">${kontrib2023.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: ${Math.min(kontrib2024 * 2, 100)}%"></div>
+                                </div>
+                                <span class="text-sm">${kontrib2024.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full" style="width: ${Math.min(kontrib2025 * 2, 100)}%"></div>
+                                </div>
+                                <span class="text-sm">${kontrib2025.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                ${trend >= 0 ? '📈' : '📉'} ${trend >= 0 ? '+' : ''}${trend.toFixed(2)}%
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Rekomendasi
+        function renderRekomendasi() {
+            const container = document.getElementById('rekomendasi');
+            const totals = getTotals();
+            
+            // Analisis
+            const avgEfektivitas = getEfektivitas(totals.realisasi2025, totals.anggaran2025);
+            const growth2425 = getGrowth(totals.realisasi2025, totals.realisasi2024);
+            
+            // Top and low performers
+            const sorted2025 = [...pajakData].sort((a, b) => b.realisasi2025 - a.realisasi2025);
+            const topPerformer = sorted2025[0];
+            
+            const efektivitasRendah = pajakData.filter(item => {
+                const ef = getEfektivitas(item.realisasi2025, item.anggaran2025);
+                return ef < 90 && item.anggaran2025 > 0;
+            });
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-800 flex items-center gap-2">
+                            <span>📊</span> Ringkasan Kinerja 2025
+                        </h4>
+                        <ul class="mt-2 space-y-1 text-sm text-blue-700">
+                            <li>• Total Realisasi: <strong>${formatRupiah(totals.realisasi2025)}</strong></li>
+                            <li>• Tingkat Efektivitas: <strong>${avgEfektivitas.toFixed(1)}%</strong> (${getEfektivitasLabel(avgEfektivitas).text})</li>
+                            <li>• Pertumbuhan dari 2024: <strong>${growth2425 >= 0 ? '+' : ''}${growth2425.toFixed(1)}%</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-800 flex items-center gap-2">
+                            <span>🏆</span> Pajak dengan Kinerja Terbaik
+                        </h4>
+                        <p class="mt-2 text-sm text-green-700">
+                            <strong>${topPerformer.nama}</strong><br>
+                            Realisasi: ${formatRupiah(topPerformer.realisasi2025)}<br>
+                            Kontribusi: ${((topPerformer.realisasi2025 / totals.realisasi2025) * 100).toFixed(1)}%
+                        </p>
+                    </div>
+                </div>
+                
+                ${efektivitasRendah.length > 0 ? `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-yellow-800 flex items-center gap-2">
+                        <span>⚠️</span> Pajak dengan Efektivitas Rendah (Perlu Perhatian)
+                    </h4>
+                    <ul class="mt-2 space-y-1 text-sm text-yellow-700">
+                        ${efektivitasRendah.map(item => {
+                            const ef = getEfektivitas(item.realisasi2025, item.anggaran2025);
+                            return `<li>• ${item.nama}: ${ef.toFixed(1)}% (${getEfektivitasLabel(ef).text})</li>`;
+                        }).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-purple-800 flex items-center gap-2">
+                        <span>💡</span> Rekomendasi Kebijakan
+                    </h4>
+                    <ul class="mt-2 space-y-2 text-sm text-purple-700">
+                        <li>1. <strong>Intensifikasi Pemungutan:</strong> Tingkatkan pengawasan dan penagihan untuk jenis pajak dengan efektivitas < 100%</li>
+                        <li>2. <strong>Ekstensifikasi Potensi:</strong> Identifikasi objek pajak baru terutama untuk PBJT dan Opsen</li>
+                        <li>3. <strong>Modernisasi Sistem:</strong> Implementasikan e-SPTPD dan pembayaran elektronik untuk meningkatkan kepatuhan</li>
+                        <li>4. <strong>Penyesuaian Target:</strong> Evaluasi ulang target anggaran berdasarkan potensi riil dan tren pertumbuhan</li>
+                        <li>5. <strong>Optimalisasi Opsen:</strong> Koordinasi dengan Pemerintah Provinsi untuk optimalisasi penerimaan Opsen PKB dan BBNKB</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Chart functions
+        function renderTrendChart() {
+            const el = document.getElementById('trendChart');
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            const totals = getTotals();
+            
+            if (charts.trend) charts.trend.destroy();
+            
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2023', '2024', '2025'],
+                    datasets: [{
+                        label: 'Anggaran',
+                        data: [totals.anggaran2023, totals.anggaran2024, totals.anggaran2025],
+                        borderColor: '#9333ea',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        borderDash: [5, 5],
+                        tension: 0.3
+                    }, {
+                        label: 'Realisasi',
+                        data: [totals.realisasi2023, totals.realisasi2024, totals.realisasi2025],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => formatRupiah(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPieChart() {
+            const el = document.getElementById('pieChart');
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            const totals = getTotals();
+            
+            if (charts.pie) charts.pie.destroy();
+            
+            const colors = [
+                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+                '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1', '#14b8a6'
+            ];
+            
+            charts.pie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: pajakData.map(item => item.nama.substring(0, 25) + '...'),
+                    datasets: [{
+                        data: pajakData.map(item => item.realisasi2025),
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { font: { size: 10 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const persen = ((value / total) * 100).toFixed(1);
+                                    return `${formatRupiah(value)} (${persen}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCompareChart() {
+            const el = document.getElementById('compareChart');
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            
+            if (charts.compare) charts.compare.destroy();
+            
+            charts.compare = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: pajakData.map(item => item.nama.substring(0, 20) + '...'),
+                    datasets: [{
+                        label: 'Anggaran 2025',
+                        data: pajakData.map(item => item.anggaran2025),
+                        backgroundColor: 'rgba(147, 51, 234, 0.7)'
+                    }, {
+                        label: 'Realisasi 2025',
+                        data: pajakData.map(item => item.realisasi2025),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { font: { size: 9 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => formatRupiah(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderGrowthChart() {
+            const el = document.getElementById('growthChart');
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            
+            if (charts.growth) charts.growth.destroy();
+            
+            const growthData = pajakData.map(item => getGrowth(item.realisasi2025, item.realisasi2024));
+            
+            charts.growth = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: pajakData.map(item => item.nama.substring(0, 20) + '...'),
+                    datasets: [{
+                        label: 'Pertumbuhan 2024-2025 (%)',
+                        data: growthData,
+                        backgroundColor: growthData.map(v => v >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
+                        borderColor: growthData.map(v => v >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { font: { size: 9 } }
+                        },
+                        y: {
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEfektivitasChart() {
+            const el = document.getElementById('efektivitasChart');
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            
+            if (charts.efektivitas) charts.efektivitas.destroy();
+            
+            charts.efektivitas = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: pajakData.slice(0, 8).map(item => item.nama.substring(0, 15) + '...'),
+                    datasets: [{
+                        label: '2023',
+                        data: pajakData.slice(0, 8).map(item => getEfektivitas(item.realisasi2023, item.anggaran2023)),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                    }, {
+                        label: '2024',
+                        data: pajakData.slice(0, 8).map(item => getEfektivitas(item.realisasi2024, item.anggaran2024)),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                    }, {
+                        label: '2025',
+                        data: pajakData.slice(0, 8).map(item => getEfektivitas(item.realisasi2025, item.anggaran2025)),
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 120,
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHorizontalChart() {
+            const el = document.getElementById('horizontalChart');
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            
+            if (charts.horizontal) charts.horizontal.destroy();
+            
+            const sortedData = [...pajakData].sort((a, b) => b.realisasi2025 - a.realisasi2025);
+            
+            charts.horizontal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedData.map(item => item.nama.substring(0, 30) + '...'),
+                    datasets: [{
+                        label: 'Realisasi 2025',
+                        data: sortedData.map(item => item.realisasi2025),
+                        backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                        borderColor: 'rgb(99, 102, 241)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => formatRupiah(value)
+                            }
+                        },
+                        y: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Quick Add Form handling
+        document.getElementById('quickAddForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const jenis = document.getElementById('quickJenis').value.trim();
+            const tahun = document.getElementById('quickTahun').value;
+            const anggaran = parseFloat(document.getElementById('quickAnggaran').value) || 0;
+            const realisasi = parseFloat(document.getElementById('quickRealisasi').value) || 0;
+            
+            if (!jenis) {
+                showNotification('Nama jenis pajak harus diisi!', 'error');
+                return;
+            }
+            
+            // Find or create entry
+            let existingIndex = pajakData.findIndex(item => item.nama.toLowerCase() === jenis.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                pajakData[existingIndex][`anggaran${tahun}`] = anggaran;
+                pajakData[existingIndex][`realisasi${tahun}`] = realisasi;
+                showNotification(`Data "${jenis}" untuk tahun ${tahun} berhasil diperbarui!`, 'success');
+            } else {
+                const newItem = {
+                    nama: jenis,
+                    anggaran2023: 0, realisasi2023: 0,
+                    anggaran2024: 0, realisasi2024: 0,
+                    anggaran2025: 0, realisasi2025: 0
+                };
+                newItem[`anggaran${tahun}`] = anggaran;
+                newItem[`realisasi${tahun}`] = realisasi;
+                pajakData.push(newItem);
+                showNotification(`Data "${jenis}" berhasil ditambahkan!`, 'success');
+            }
+            
+            saveData();
+            refreshAll();
+            
+            // Reset form
+            document.getElementById('quickJenis').value = '';
+            document.getElementById('quickAnggaran').value = '';
+            document.getElementById('quickRealisasi').value = '';
+        });
+
+        // Full Data Form handling
+        document.getElementById('fullDataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const jenis = document.getElementById('fullJenis').value.trim();
+            
+            if (!jenis) {
+                showNotification('Nama jenis pajak harus diisi!', 'error');
+                return;
+            }
+            
+            const anggaran2023 = parseFloat(document.getElementById('fullAnggaran2023').value) || 0;
+            const realisasi2023 = parseFloat(document.getElementById('fullRealisasi2023').value) || 0;
+            const anggaran2024 = parseFloat(document.getElementById('fullAnggaran2024').value) || 0;
+            const realisasi2024 = parseFloat(document.getElementById('fullRealisasi2024').value) || 0;
+            const anggaran2025 = parseFloat(document.getElementById('fullAnggaran2025').value) || 0;
+            const realisasi2025 = parseFloat(document.getElementById('fullRealisasi2025').value) || 0;
+            
+            // Find or create entry
+            let existingIndex = pajakData.findIndex(item => item.nama.toLowerCase() === jenis.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                pajakData[existingIndex] = {
+                    nama: jenis,
+                    anggaran2023, realisasi2023,
+                    anggaran2024, realisasi2024,
+                    anggaran2025, realisasi2025
+                };
+                showNotification(`Data "${jenis}" berhasil diperbarui!`, 'success');
+            } else {
+                pajakData.push({
+                    nama: jenis,
+                    anggaran2023, realisasi2023,
+                    anggaran2024, realisasi2024,
+                    anggaran2025, realisasi2025
+                });
+                showNotification(`Data "${jenis}" berhasil ditambahkan!`, 'success');
+            }
+            
+            saveData();
+            refreshAll();
+            clearFullForm();
+        });
+
+        function clearFullForm() {
+            document.getElementById('fullJenis').value = '';
+            document.getElementById('fullAnggaran2023').value = '';
+            document.getElementById('fullRealisasi2023').value = '';
+            document.getElementById('fullAnggaran2024').value = '';
+            document.getElementById('fullRealisasi2024').value = '';
+            document.getElementById('fullAnggaran2025').value = '';
+            document.getElementById('fullRealisasi2025').value = '';
+        }
+
+        // Edit Modal Functions
+        function openEditModal(index) {
+            const item = pajakData[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editJenis').value = item.nama;
+            document.getElementById('editAnggaran2023').value = item.anggaran2023;
+            document.getElementById('editRealisasi2023').value = item.realisasi2023;
+            document.getElementById('editAnggaran2024').value = item.anggaran2024;
+            document.getElementById('editRealisasi2024').value = item.realisasi2024;
+            document.getElementById('editAnggaran2025').value = item.anggaran2025;
+            document.getElementById('editRealisasi2025').value = item.realisasi2025;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const index = parseInt(document.getElementById('editIndex').value);
+            const jenis = document.getElementById('editJenis').value.trim();
+            
+            if (!jenis) {
+                showNotification('Nama jenis pajak harus diisi!', 'error');
+                return;
+            }
+            
+            pajakData[index] = {
+                nama: jenis,
+                anggaran2023: parseFloat(document.getElementById('editAnggaran2023').value) || 0,
+                realisasi2023: parseFloat(document.getElementById('editRealisasi2023').value) || 0,
+                anggaran2024: parseFloat(document.getElementById('editAnggaran2024').value) || 0,
+                realisasi2024: parseFloat(document.getElementById('editRealisasi2024').value) || 0,
+                anggaran2025: parseFloat(document.getElementById('editAnggaran2025').value) || 0,
+                realisasi2025: parseFloat(document.getElementById('editRealisasi2025').value) || 0
+            };
+            
+            saveData();
+            refreshAll();
+            closeEditModal();
+            showNotification(`Data "${jenis}" berhasil diperbarui!`, 'success');
+        });
+
+        // Delete function
+        function deleteData(index) {
+            const item = pajakData[index];
+            if (confirm(`Apakah Anda yakin ingin menghapus "${item.nama}"?`)) {
+                pajakData.splice(index, 1);
+                saveData();
+                refreshAll();
+                showNotification(`Data "${item.nama}" berhasil dihapus!`, 'success');
+            }
+        }
+
+        // Bulk Input Modal Functions
+        function showBulkInputModal() {
+            document.getElementById('bulkInputModal').classList.remove('hidden');
+        }
+
+        function closeBulkInputModal() {
+            document.getElementById('bulkInputModal').classList.add('hidden');
+            document.getElementById('bulkInputText').value = '';
+        }
+
+        function processBulkInput() {
+            const text = document.getElementById('bulkInputText').value.trim();
+            if (!text) {
+                showNotification('Tidak ada data untuk diproses!', 'error');
+                return;
+            }
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            let successCount = 0;
+            let errorCount = 0;
+            
+            lines.forEach((line, lineIndex) => {
+                const parts = line.split(';').map(p => p.trim());
+                if (parts.length >= 7 && parts[0]) {
+                    const existingIndex = pajakData.findIndex(item => item.nama.toLowerCase() === parts[0].toLowerCase());
+                    const newData = {
+                        nama: parts[0],
+                        anggaran2023: parseFloat(parts[1]) || 0,
+                        realisasi2023: parseFloat(parts[2]) || 0,
+                        anggaran2024: parseFloat(parts[3]) || 0,
+                        realisasi2024: parseFloat(parts[4]) || 0,
+                        anggaran2025: parseFloat(parts[5]) || 0,
+                        realisasi2025: parseFloat(parts[6]) || 0
+                    };
+                    
+                    if (existingIndex >= 0) {
+                        pajakData[existingIndex] = newData;
+                    } else {
+                        pajakData.push(newData);
+                    }
+                    successCount++;
+                } else if (parts[0]) {
+                    errorCount++;
+                }
+            });
+            
+            saveData();
+            refreshAll();
+            closeBulkInputModal();
+            showNotification(`${successCount} data berhasil diproses. ${errorCount > 0 ? `${errorCount} baris error.` : ''}`, successCount > 0 ? 'success' : 'error');
+        }
+
+        // Import CSV Function
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                // Skip header row
+                let successCount = 0;
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(',').map(p => p.trim().replace(/^"|"$/g, ''));
+                    if (parts.length >= 7 && parts[0]) {
+                        const existingIndex = pajakData.findIndex(item => item.nama.toLowerCase() === parts[0].toLowerCase());
+                        const newData = {
+                            nama: parts[0],
+                            anggaran2023: parseFloat(parts[1]) || 0,
+                            realisasi2023: parseFloat(parts[2]) || 0,
+                            anggaran2024: parseFloat(parts[3]) || 0,
+                            realisasi2024: parseFloat(parts[4]) || 0,
+                            anggaran2025: parseFloat(parts[5]) || 0,
+                            realisasi2025: parseFloat(parts[6]) || 0
+                        };
+                        
+                        if (existingIndex >= 0) {
+                            pajakData[existingIndex] = newData;
+                        } else {
+                            pajakData.push(newData);
+                        }
+                        successCount++;
+                    }
+                }
+                
+                saveData();
+                refreshAll();
+                showNotification(`${successCount} data berhasil diimpor dari CSV!`, 'success');
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('pajakData', JSON.stringify(pajakData));
+        }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-[100] transition-all transform translate-x-0`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function resetData() {
+            if (confirm('Apakah Anda yakin ingin mengembalikan data ke default?\n\nSemua perubahan akan hilang!')) {
+                pajakData = JSON.parse(JSON.stringify(defaultPajakData));
+                saveData();
+                refreshAll();
+                showNotification('Data berhasil direset ke default!', 'success');
+            }
+        }
+
+        function exportToCSV() {
+            let csv = 'Jenis Pajak,Anggaran 2023,Realisasi 2023,Anggaran 2024,Realisasi 2024,Anggaran 2025,Realisasi 2025\n';
+            pajakData.forEach(item => {
+                csv += `"${item.nama}",${item.anggaran2023},${item.realisasi2023},${item.anggaran2024},${item.realisasi2024},${item.anggaran2025},${item.realisasi2025}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `data_pajak_daerah_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showNotification('Data berhasil diekspor ke CSV!', 'success');
+        }
+
+        function filterTable() {
+            renderLRATable();
+        }
+
+        function refreshAll() {
+            updateDashboard();
+            renderLRATable();
+            renderEfektivitasAnalysis();
+            renderPertumbuhanAnalysis();
+            renderKontribusiAnalysis();
+            renderRekomendasi();
+            updateDataSummary();
+            renderRecentEntries();
+            updateStatistics();
+        }
+
+        function updateDataSummary() {
+            const totals = getTotals();
+            document.getElementById('totalDataCount').textContent = pajakData.length;
+            document.getElementById('totalRealisasi2025Card').textContent = formatRupiah(totals.realisasi2025);
+            const avgEf = getEfektivitas(totals.realisasi2025, totals.anggaran2025);
+            document.getElementById('avgEfektivitasCard').textContent = avgEf.toFixed(1) + '%';
+        }
+
+        // Input Quick Form (in Input tab)
+        document.getElementById('inputQuickForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const jenis = document.getElementById('inputQuickJenis').value.trim();
+            const tahun = document.getElementById('inputQuickTahun').value;
+            const anggaran = parseFloat(document.getElementById('inputQuickAnggaran').value) || 0;
+            const realisasi = parseFloat(document.getElementById('inputQuickRealisasi').value) || 0;
+            
+            if (!jenis) {
+                showNotification('Nama jenis pajak harus diisi!', 'error');
+                return;
+            }
+            
+            let existingIndex = pajakData.findIndex(item => item.nama.toLowerCase() === jenis.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                pajakData[existingIndex][`anggaran${tahun}`] = anggaran;
+                pajakData[existingIndex][`realisasi${tahun}`] = realisasi;
+                showNotification(`Data "${jenis}" untuk tahun ${tahun} berhasil diperbarui!`, 'success');
+            } else {
+                const newItem = {
+                    nama: jenis,
+                    anggaran2023: 0, realisasi2023: 0,
+                    anggaran2024: 0, realisasi2024: 0,
+                    anggaran2025: 0, realisasi2025: 0
+                };
+                newItem[`anggaran${tahun}`] = anggaran;
+                newItem[`realisasi${tahun}`] = realisasi;
+                pajakData.push(newItem);
+                showNotification(`Data "${jenis}" berhasil ditambahkan!`, 'success');
+            }
+            
+            saveData();
+            refreshAll();
+            
+            document.getElementById('inputQuickJenis').value = '';
+            document.getElementById('inputQuickAnggaran').value = '';
+            document.getElementById('inputQuickRealisasi').value = '';
+        });
+
+        // Input Complete Form (in Input tab)
+        document.getElementById('inputCompleteForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const jenis = document.getElementById('inputCompleteJenis').value.trim();
+            
+            if (!jenis) {
+                showNotification('Nama jenis pajak harus diisi!', 'error');
+                return;
+            }
+            
+            const newData = {
+                nama: jenis,
+                anggaran2023: parseFloat(document.getElementById('inputCompleteAng2023').value) || 0,
+                realisasi2023: parseFloat(document.getElementById('inputCompleteReal2023').value) || 0,
+                anggaran2024: parseFloat(document.getElementById('inputCompleteAng2024').value) || 0,
+                realisasi2024: parseFloat(document.getElementById('inputCompleteReal2024').value) || 0,
+                anggaran2025: parseFloat(document.getElementById('inputCompleteAng2025').value) || 0,
+                realisasi2025: parseFloat(document.getElementById('inputCompleteReal2025').value) || 0
+            };
+            
+            let existingIndex = pajakData.findIndex(item => item.nama.toLowerCase() === jenis.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                pajakData[existingIndex] = newData;
+                showNotification(`Data "${jenis}" berhasil diperbarui!`, 'success');
+            } else {
+                pajakData.push(newData);
+                showNotification(`Data "${jenis}" berhasil ditambahkan!`, 'success');
+            }
+            
+            saveData();
+            refreshAll();
+            
+            // Clear form
+            document.getElementById('inputCompleteJenis').value = '';
+            ['Ang2023', 'Real2023', 'Ang2024', 'Real2024', 'Ang2025', 'Real2025'].forEach(field => {
+                document.getElementById('inputComplete' + field).value = '';
+            });
+        });
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('PERINGATAN: Semua data akan dihapus!\n\nApakah Anda yakin?')) {
+                if (confirm('Tindakan ini tidak dapat dibatalkan. Lanjutkan?')) {
+                    pajakData = [];
+                    saveData();
+                    refreshAll();
+                    showNotification('Semua data berhasil dihapus!', 'success');
+                }
+            }
+        }
+
+        // Render recent entries
+        function renderRecentEntries() {
+            const tbody = document.getElementById('recentEntriesBody');
+            if (!tbody) return;
+            
+            const recentData = [...pajakData].slice(-5).reverse();
+            
+            tbody.innerHTML = recentData.map((item, idx) => {
+                const originalIndex = pajakData.findIndex(p => p.nama === item.nama);
+                const ef = getEfektivitas(item.realisasi2025, item.anggaran2025);
+                const efLabel = getEfektivitasLabel(ef);
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 font-medium text-gray-800">${item.nama}</td>
+                        <td class="px-3 py-2 text-right text-gray-600">${formatNumber(item.anggaran2025)}</td>
+                        <td class="px-3 py-2 text-right text-gray-800">${formatNumber(item.realisasi2025)}</td>
+                        <td class="px-3 py-2 text-center">
+                            <span class="px-2 py-1 rounded text-xs ${efLabel.class}">${ef.toFixed(1)}%</span>
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                            <button onclick="openEditModal(${originalIndex})" class="text-blue-600 hover:text-blue-800 mx-1">✏️</button>
+                            <button onclick="deleteData(${originalIndex})" class="text-red-600 hover:text-red-800 mx-1">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (recentData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-3 py-8 text-center text-gray-500">
+                            Belum ada data. Silakan tambahkan data baru.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const statJenis = document.getElementById('statTotalJenis');
+            const statSize = document.getElementById('statDataSize');
+            
+            if (statJenis) statJenis.textContent = pajakData.length;
+            if (statSize) {
+                const dataStr = JSON.stringify(pajakData);
+                const sizeKB = (new Blob([dataStr]).size / 1024).toFixed(2);
+                statSize.textContent = sizeKB + ' KB';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAll();
+            renderRecentEntries();
+            updateStatistics();
+        });
+    </script>
+</body>
+</html>
